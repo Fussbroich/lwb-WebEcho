@@ -19,6 +19,7 @@ import (
 	"os"
 )
 
+// Ein Beispiel-Handler für alles
 func echoHandler(tag string, logger *log.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		msg := fmt.Sprintf("Ich handle %s.\n"+
@@ -46,23 +47,32 @@ func echoHandler(tag string, logger *log.Logger) http.Handler {
 	})
 }
 
+// vor dem Serverstart:
+func registriereAppRouten(logger *log.Logger, mux *http.ServeMux) {
+	// Der jeweilige Handler enthält die "Modelle und Logik" Deiner WebApp.
+
+	// Hinweis: vor go 1.22 musste man die HTTP-Methode händisch aus dem Request extrahieren.
+	// Der neue ServeMux seit 1.22 nimmt einem diese Arbeiten ab ...
+	mux.Handle("GET /meinPfad", echoHandler("Get an /meinPfad", logger))
+	mux.Handle("GET /{$}", echoHandler("Get an der Wurzel", logger))
+	mux.Handle("POST /meinPfad", echoHandler("Posts an /meinPfad", logger))
+	// Hier sollte man eigentlich nie rauskommen.
+	mux.Handle("/", echoHandler("Fallbacks", logger))
+
+}
+
 func main() {
 	// ein neuer Multiplexer für das Routing
 	mux := http.NewServeMux()
 	logger := log.New(os.Stdout, "**", 0)
 
-	// registriere einige Methoden und Routen, die Deine WebApp beantworten soll
-	// Hinweis: vor go 1.22 musste man die Methode händisch aus dem Request extrahieren.
-	// Der neue ServeMux seit 1.22 nimmt einem diese und viele andere Arbeiten ab ...
-	mux.Handle("GET /meinPfad", echoHandler("Get an /meinPfad", logger))
-	mux.Handle("GET /{$}", echoHandler("Get an der Wurzel", logger))
-	mux.Handle("POST /meinPfad", echoHandler("Posts an /meinPfad", logger))
-	mux.Handle("/", echoHandler("Fallbacks", logger))
+	// Registriere einige Methoden und Routen, die Deine WebApp anbieten soll.
+	registriereAppRouten(logger, mux)
 
 	// Baue einen Web-Server und starte ihn
 	server := &http.Server{
-		// Hier würde man die eigene IP-Adresse angeben und die Firewall für ankommendes TCP freigeben
-		// Damit wird der Server von anderen erreichbar.
+		// Hier würde man die eigene IP-Adresse angeben und müsste die Firewall für ankommendes TCP freigeben.
+		// Damit wird der Server von anderen im Netz erreichbar.
 		Addr:    net.JoinHostPort("localhost", "8081"),
 		Handler: http.Handler(mux),
 	}
