@@ -65,6 +65,7 @@ func main() {
 	// Vor go 1.22 muss man die HTTP-Methode händisch aus dem Request extrahieren.
 	// (fehleranfällig und unschön)
 	// Der neue ServeMux seit 1.22 nimmt einem diese Arbeiten ab ...
+	// siehe https://eli.thegreenplace.net/2023/better-http-server-routing-in-go-122
 	mux.Handle("GET /meinPfad", echoHandler("Get an /meinPfad", logger))
 	mux.Handle("GET /{$}", echoHandler("Get an der Wurzel", logger))
 	mux.Handle("POST /meinPfad", echoHandler("Posts an /meinPfad", logger))
