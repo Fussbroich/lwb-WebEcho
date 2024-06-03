@@ -1,13 +1,13 @@
-// Zweck: Wie baue ich einen Webserver in go?
-// Mögliche Anwendung für dynamische Views auf eine Datenbank über einen Browser.
-//	Go ab 1.22 (!), aktueller Browser
+// Thema: Wie baue ich einen Webserver in go?
+// Zweck: Mögliche Anwendung für dynamische Views auf eine Datenbank über einen Browser.
+//	Go ab 1.22 (!), aktueller Browser (es geht auch mit go 1.18, ist aber etwas mehr Arbeit)
 //
 //	verwendete Pakete: strconv, embed, fmt, io, log, net, os, os/signal, time, sowie:
 //
 //		HTTP:		https://pkg.go.dev/net/http
 //		HTML:		https://pkg.go.dev/html/template
 //
-//	Datum: 23.05.2024
+//	Datum: 02.06.2024
 
 package main
 
@@ -19,6 +19,9 @@ import (
 	"os"
 )
 
+// Hier würde man für jede Aufgabe einen eigenen Handler schreiben
+// Ein "Handler" erfüllt das Interface http.HandlerFunc.
+
 // Ein Beispiel-Handler für alles
 func echoHandler(tag string, logger *log.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -27,7 +30,7 @@ func echoHandler(tag string, logger *log.Logger) http.Handler {
 			tag, r.Method, r.URL.Path)
 		logger.Println(msg) // -> logging für die Server-Konsole
 
-		// response (eine Web-Page) für den Browser/Client -> Fehler sind zu behandeln.
+		// Die Response (z.B. eine Web-Page) für den Browser/Client -> Fehler sind zu behandeln.
 		// Tipp: Benutze html/template zur dynamischen Erzeugung der HTML-Seiten
 		htmlContent := `
 <html>
@@ -39,6 +42,7 @@ func echoHandler(tag string, logger *log.Logger) http.Handler {
 	</body>
 </html>`
 
+		//Im Header sagt man dem Browser, was man da anliefert.
 		w.Header().Set("Content-Type", "text/html")
 		if _, err := w.Write([]byte(htmlContent)); err != nil {
 			http.Error(w, fmt.Sprintf("interner Serverfehler %s", err), http.StatusInternalServerError)
@@ -47,11 +51,19 @@ func echoHandler(tag string, logger *log.Logger) http.Handler {
 	})
 }
 
-// vor dem Serverstart:
-func registriereAppRouten(logger *log.Logger, mux *http.ServeMux) {
+func main() {
+	logger := log.New(os.Stdout, "**", 0)
+
+	// ein neuer Multiplexer für das Routing
+	var mux *http.ServeMux = http.NewServeMux()
+
+	// Registriere einige Methoden und Routen, die Deine WebApp anbieten soll.
+	// Hier wird jeder Methode/Route ein Handler zugeordnet.
 	// Der jeweilige Handler enthält die "Modelle und Logik" Deiner WebApp.
 
-	// Hinweis: vor go 1.22 musste man die HTTP-Methode händisch aus dem Request extrahieren.
+	// HINWEIS: das funktioniert erst mit go 1.22 - sonst kurz umbauen:
+	// Vor go 1.22 muss man die HTTP-Methode händisch aus dem Request extrahieren.
+	// (fehleranfällig und unschön)
 	// Der neue ServeMux seit 1.22 nimmt einem diese Arbeiten ab ...
 	mux.Handle("GET /meinPfad", echoHandler("Get an /meinPfad", logger))
 	mux.Handle("GET /{$}", echoHandler("Get an der Wurzel", logger))
@@ -59,26 +71,18 @@ func registriereAppRouten(logger *log.Logger, mux *http.ServeMux) {
 	// Hier sollte man eigentlich nie rauskommen.
 	mux.Handle("/", echoHandler("Fallbacks", logger))
 
-}
-
-func main() {
-	// ein neuer Multiplexer für das Routing
-	mux := http.NewServeMux()
-	logger := log.New(os.Stdout, "**", 0)
-
-	// Registriere einige Methoden und Routen, die Deine WebApp anbieten soll.
-	registriereAppRouten(logger, mux)
-
-	// Baue einen Web-Server und starte ihn
+	// Baue einen Web-Server zusammen und starte ihn
 	server := &http.Server{
-		// Hier würde man die eigene IP-Adresse angeben und müsste die Firewall für ankommendes TCP freigeben.
-		// Damit wird der Server von anderen im Netz erreichbar.
+		// Hier würde man die eigene IP-Adresse angeben und müsste
+		// die eigene Firewall für ankommendes TCP freigeben,
+		// damit der Server von anderen im Netz erreichbar wird.
 		Addr:    net.JoinHostPort("localhost", "8081"),
 		Handler: http.Handler(mux),
 	}
 
-	fmt.Printf("starte Web-Server unter http://%s\n", server.Addr)
+	logger.Printf("Starte Web-Server unter http://%s\n", server.Addr)
+
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		fmt.Printf("Server-Fehler: %s\n", err)
+		logger.Printf("Server-Fehler: %s\n", err)
 	}
 }
