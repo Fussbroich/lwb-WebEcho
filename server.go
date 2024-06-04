@@ -15,10 +15,12 @@ import (
 )
 
 // Hier würde man für jede Aufgabe einen eigenen Handler schreiben
-// Ein "Handler" erfüllt das Interface http.HandlerFunc.
+// Ein "Handler" erfüllt das Interface http.Handler.
 
-// Ein Beispiel-Handler für alles
+// Ein Beispiel-Handler für alles (als closure implementiert, um verschiedene
+// zusätzliche Parameter, wie Datenbankverbindungen, Logger und dergleichen mit einzubinden.)
 func echoHandler(tag string, logger *log.Logger) http.Handler {
+	// erzeuge den Handler als anonyme Funktion und gib diese zurück
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		msg := fmt.Sprintf("Ich handle %s.\n"+
 			"Du hast den Server mit der %s Methode unter %s erreicht.",
