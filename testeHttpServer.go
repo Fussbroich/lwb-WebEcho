@@ -11,7 +11,7 @@ import (
 
 // Zwei beispielhafte Anfragen-Bediener
 func halloBediener() []byte {
-	// Die Response (eine HTML-Page) für den Browser erzeugen.
+	// Die Response (eine HTML-Seite) für den Browser erzeugen.
 	// Tipp: Benutze html/template zur dynamischen Erzeugung von HTML-Seiten und
 	// fülle die HTML-Seite mit Daten.
 	return []byte(`
@@ -42,7 +42,7 @@ func main() {
 	// siehe https://eli.thegreenplace.net/2023/better-http-server-routing-in-go-122
 
 	// Wir bedienen nur die folgende sehr einfache Benutzerschnittstelle.
-	// Es wird derzeit in jedem Fall lediglich eine Webpage ausgeliefert,
+	// Es wird derzeit in jedem Fall lediglich eine HTML-Seite ausgeliefert,
 	// die hallo oder n'juuten ausgibt.
 	// Andere Bediener würden echte Web-Seiten erzeugen ...
 
