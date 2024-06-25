@@ -35,7 +35,7 @@ func (s *data) VeroeffentlicheVerzeichnis(url, server_verzeichnis string) {
 	s.mux.Handle(url, http.FileServer(http.Dir(server_verzeichnis)))
 }
 
-func (s *data) Bediene(anfrage_muster string, bediener func() ([]byte, error)) {
+func (s *data) SetzeBediener(anfrage_muster string, bediener func() ([]byte, error)) {
 	var handler = http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			var err error

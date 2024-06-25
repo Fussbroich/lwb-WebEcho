@@ -52,11 +52,11 @@ func main() {
 	// die hallo oder n'juuten ausgibt, oder es gibt Stress.
 
 	// Bediene "GET /gruss"
-	srv.Bediene("GET /gruss", normalBediener)
+	srv.SetzeBediener("GET /gruss", normalBediener)
 	// Bediene "GET /gruss/berlin"
-	srv.Bediene("GET /gruss/berlin", berlinBediener)
+	srv.SetzeBediener("GET /gruss/berlin", berlinBediener)
 	// Bediene "GET /stress"
-	srv.Bediene("GET /stress", stressBediener)
+	srv.SetzeBediener("GET /stress", stressBediener)
 
 	// Wir veröffentlichen auch ein Verzeichnis für statische HTML-Seiten,
 	// Bilder, Downloads und CSS. Bediene "GET /" muss damit auch nicht sein, denn
