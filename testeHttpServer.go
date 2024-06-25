@@ -47,7 +47,7 @@ func main() {
 	// Andere Bediener würden echte Web-Seiten erzeugen ...
 
 	// GET / - die Pfad-Syntax, z.B. {$} wird im obigen Dokument zum neuen Routing erklärt.
-	srv.BedieneGET("/{$}", halloBediener) // bediene Wurzel wie /ping
+	srv.BedieneGET("/{$}", halloBediener) // bediene Wurzel wie /hallo
 	// GET /hallo
 	srv.BedieneGET("/hallo", halloBediener)
 	// GET /njuten
