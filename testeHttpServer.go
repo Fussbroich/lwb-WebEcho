@@ -64,5 +64,5 @@ func main() {
 	srv.VeroeffentlicheVerzeichnis("/", "static")
 
 	// den Web-Server starten - beendet wird er mit Ctrl-C im Terminal
-	srv.LauscheUndBediene() // Aufruf blockiert
+	srv.LauscheUndBediene() // Aufruf blockiert, bis Server beendet wird
 }

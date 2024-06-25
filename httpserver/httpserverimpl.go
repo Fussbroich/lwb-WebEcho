@@ -30,8 +30,9 @@ func New(hostIP string, portnummer uint16) *data {
 	return s
 }
 
-func (s *data) VeroeffentlicheVerzeichnis(pfad, server_verzeichnis string) {
-	s.mux.Handle(pfad, http.FileServer(http.Dir(server_verzeichnis)))
+func (s *data) VeroeffentlicheVerzeichnis(url, server_verzeichnis string) {
+	s.logger.Printf("stelle Verzeichnis %s öffentlich unter %s", server_verzeichnis, url)
+	s.mux.Handle(url, http.FileServer(http.Dir(server_verzeichnis)))
 }
 
 func (s *data) Bediene(anfrage_muster string, bediener func() ([]byte, error)) {
