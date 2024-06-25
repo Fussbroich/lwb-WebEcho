@@ -25,48 +25,41 @@ func New(hostIP string, portnummer uint16) *data {
 	s.portNr = portnummer
 	// setze logging-Ausgang
 	s.logger = log.New(os.Stdout, "** ", 0)
-	// der neue (go 1.22) http-Multiplexer macht das Routing
+	// der neue (go 1.22) http-Multiplexer macht das Routing leichter
 	s.mux = http.NewServeMux()
 	return s
 }
 
-// HINWEIS: das funktioniert so erst mit go 1.22 - sonst kurz umbauen:
-// Vor go 1.22 musste man die HTTP-Methode händisch aus dem Request extrahieren.
-// (fehleranfällig und unschön)
-
-func (s *data) BedieneGET(pfad string, bediener func() []byte) {
-	s.route(http.MethodGet, pfad, bediener)
-}
-func (s *data) BedienePUT(pfad string, bediener func() []byte) {
-	s.route(http.MethodPut, pfad, bediener)
-}
-func (s *data) BedienePOST(pfad string, bediener func() []byte) {
-	s.route(http.MethodPost, pfad, bediener)
-}
-func (s *data) BedieneDELETE(pfad string, bediener func() []byte) {
-	s.route(http.MethodDelete, pfad, bediener)
-}
-
-func (s *data) BedieneVerzeichnis(pfad, server_verzeichnis string) {
+func (s *data) VeroeffentlicheVerzeichnis(pfad, server_verzeichnis string) {
 	s.mux.Handle(pfad, http.FileServer(http.Dir(server_verzeichnis)))
 }
 
-func (s *data) route(methode, pfad string, bediener func() []byte) {
+func (s *data) Bediene(anfrage_muster string, bediener func() ([]byte, error)) {
 	var handler = http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			var err error
+			var content []byte
 			s.logger.Printf("Server hat %s unter %s erhalten.", r.Method, r.URL.Path)
 			//Im Header sagt man dem Browser, was man da anliefert ...
 			w.Header().Set("Content-Type", "text/html")
+			if content, err = bediener(); err != nil {
+				http.Error(w, fmt.Sprintf("interner Serverfehler: %s", err), http.StatusInternalServerError)
+				return
+			}
 			// ...und schreibt die Response -> Fehler sind zu behandeln.
-			if _, err := w.Write(bediener()); err != nil {
+			if _, err := w.Write(content); err != nil {
 				http.Error(w, fmt.Sprintf("interner Serverfehler %s", err), http.StatusInternalServerError)
 				return
 			}
 		})
-	s.logger.Printf("setze Bediener für %s %s", methode, pfad)
-	s.mux.Handle(fmt.Sprintf("%s %s", methode, pfad), handler)
+	s.logger.Printf("setze Bediener für %s", anfrage_muster)
+	// HINWEIS: das funktioniert so erst mit go 1.22 - sonst kurz umbauen:
+	// Vor go 1.22 musste man die HTTP-Methode händisch aus dem Request extrahieren.
+	// (fehleranfällig und unschön)
+	s.mux.Handle(anfrage_muster, handler)
 }
 
+// ListenAndServe ;-)
 func (s *data) LauscheUndBediene() error {
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -103,7 +96,7 @@ func (s *data) LauscheUndBediene() error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		<-ctx.Done() // Zeit zum Herunterfahren
+		<-ctx.Done() // Zeit zum gutmütigen Herunterfahren
 
 		s.logger.Println("Stoppe HTTP-Server")
 		// ein Timeout; wir warten nicht ewig
@@ -111,7 +104,7 @@ func (s *data) LauscheUndBediene() error {
 		sdCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 		defer cancel()
 
-		s.logger.Println("Informiere alle Clients; bitte warten")
+		s.logger.Println("Warte auf Beenden der Anfragen ...")
 		if err := server.Shutdown(sdCtx); err != nil {
 			fmt.Fprintf(os.Stderr, "Fehler beim Stoppen des Server: %s\n", err)
 		}
