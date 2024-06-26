@@ -11,11 +11,11 @@ package httpserver
 type HttpServer interface {
 
 	// Http-Anfragen bedienen:
-	//	anfrage_muster ist "<Http-Methode> <Host>/<Pfad>"
+	//	anfrage ist "<Http-Methode> <Url-Muster>"
 	//	bediener ist die "Bearbeitungsfunktion" des Servers. Sie generiert und
 	//	liefert die Antwort in Form einer Bytefolge (Html). Falls dabei ein
 	// Fehler passiert, liefert sie diesen.
-	SetzeBediener(anfrage_muster string, bediener func() ([]byte, error))
+	SetzeBediener(http_methode, url_muster string, bediener func() ([]byte, error))
 
 	// Das komplette Server-Verzeichnis ist unter dem url zugreifbar.
 	VeroeffentlicheVerzeichnis(url string, server_verzeichnis string)

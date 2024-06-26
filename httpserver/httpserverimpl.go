@@ -19,6 +19,13 @@ type data struct {
 	logger *log.Logger
 }
 
+const (
+	MethodeGet    = "GET"
+	MethodePost   = "POST"
+	MethodePut    = "PUT"
+	MethodeDelete = "DELETE"
+)
+
 func New(hostIP string, portnummer uint16) *data {
 	s := new(data)
 	s.hostIP = hostIP
@@ -35,7 +42,7 @@ func (s *data) VeroeffentlicheVerzeichnis(url, server_verzeichnis string) {
 	s.mux.Handle(url, http.FileServer(http.Dir(server_verzeichnis)))
 }
 
-func (s *data) SetzeBediener(anfrage_muster string, bediener func() ([]byte, error)) {
+func (s *data) SetzeBediener(methode, url_muster string, bediener func() ([]byte, error)) {
 	var handler = http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			var err error
@@ -53,11 +60,11 @@ func (s *data) SetzeBediener(anfrage_muster string, bediener func() ([]byte, err
 				return
 			}
 		})
-	s.logger.Printf("setze Bediener für %s", anfrage_muster)
-	// HINWEIS: das funktioniert so erst mit go 1.22 - sonst kurz umbauen:
-	// Vor go 1.22 musste man die HTTP-Methode händisch aus dem Request extrahieren.
-	// (fehleranfällig und unschön)
-	s.mux.Handle(anfrage_muster, handler)
+	s.logger.Printf("setze Bediener für %s %s", methode, url_muster)
+	// HINWEIS: das funktioniert so erst mit dem ServeMux aus go 1.22 - sonst kurz umbauen:
+	// Vor go 1.22 musste man die HTTP-Methode im Handler händisch aus dem Request extrahieren
+	// und dann mit einem switch weiterverarbeiten.
+	s.mux.Handle(methode+" "+url_muster, handler)
 }
 
 // ListenAndServe ;-)
