@@ -42,12 +42,13 @@ func (s *data) VeroeffentlicheVerzeichnis(url, server_verzeichnis string) {
 	s.mux.Handle(url, http.FileServer(http.Dir(server_verzeichnis)))
 }
 
-func (s *data) SetzeBediener(methode, url_muster string, bediener func() ([]byte, error)) {
+// Hier werden nur Html-Ausgaben verarbeitet (Content-Type ist "text/html")
+func (s *data) SetzeHtmlBediener(methode, url_muster string, bediener func() ([]byte, error)) {
 	var handler = http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			var err error
 			var content []byte
-			s.logger.Printf("Server hat %s unter %s erhalten.", r.Method, r.URL.Path)
+			s.logger.Printf("Anfrage %s %s", r.Method, r.URL.Path)
 			//Im Header sagt man dem Browser, was man da anliefert ...
 			w.Header().Set("Content-Type", "text/html")
 			if content, err = bediener(); err != nil {
@@ -60,7 +61,7 @@ func (s *data) SetzeBediener(methode, url_muster string, bediener func() ([]byte
 				return
 			}
 		})
-	s.logger.Printf("setze Bediener für %s %s", methode, url_muster)
+	s.logger.Printf("setze Html-Bediener für %s %s", methode, url_muster)
 	// HINWEIS: das funktioniert so erst mit dem ServeMux aus go 1.22 - sonst kurz umbauen:
 	// Vor go 1.22 musste man die HTTP-Methode im Handler händisch aus dem Request extrahieren
 	// und dann mit einem switch weiterverarbeiten.

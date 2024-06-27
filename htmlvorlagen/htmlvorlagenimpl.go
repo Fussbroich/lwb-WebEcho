@@ -7,20 +7,17 @@ import (
 
 type data struct {
 	vorlage *template.Template
-	params  map[string]string
+	params  map[string]any
 }
 
-func NewVorlage(text string) (*data, error) {
-	var err error
+func NewVorlage(html_text string) *data {
 	v := new(data)
-	if v.vorlage, err = template.New("tpl").Parse(text); err != nil {
-		return nil, err
-	}
-	v.params = make(map[string]string)
-	return v, nil
+	v.vorlage = template.Must(template.New("tpl").Parse(html_text))
+	v.params = make(map[string]any)
+	return v
 }
 
-func (v *data) SetzeParameter(name, wert string) {
+func (v *data) SetzeParameter(name string, wert any) {
 	v.params[name] = wert
 }
 

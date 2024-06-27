@@ -2,6 +2,8 @@
 //
 // Zweck: Erzeuge und veröffentliche dynamische Web-Seiten mit Deinen Daten aus einem go-Programm.
 //
+// HINWEIS: benötigt go 1.22 im Modulmodus
+//
 // Autor: T. Schrader
 //
 // Datum: 02.06.2024
@@ -19,60 +21,50 @@ import (
 // mit div-Elementen. Die "class" bezieht sich auf einen Styling-Eintrag
 // in der style.css-Datei im öffentlichen Verzeichnis.
 // So hast Du eine gute Kontrolle über das Design der Darstellung.
-const grussSeite = `
+// Mehr zu HTML und CSS lernst Du unter
+// https://wiki.selfhtml.org/wiki/HTML
+// https://www.w3schools.com/html/
+var grussSeite = html.NewVorlage(`
 <!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="UTF-8">
 		<!-- Trick: nach Änderungen zähle die Versionsnummer v=... beliebig hoch -->
 	    <link rel="stylesheet" href="/style.css?v=1.2">
-		<title>{{$.Title}}</title>
+		<title>{{$.Titel}}</title>
 	</head>
 	<body>
 	<!-- ein div für die Navigation -->
 	<div class="navigation">
 		<a href="/gruss">grüße normal</a> |
 		<a href="/gruss/berlin">grüße berlinerisch</a> |
-		<a href="/stress">provoziere Stress</a> |
-		<a href="/">zur Übersicht</a>
+		<a href="/stress">provoziere Stress</a>
 	</div>
 	<!-- ein div für den Inhalt -->
 	<div class="inhalt">{{$.Gruss}}</div>
 </body>
-</html>`
+</html>`)
 
-// Drei beispielhafte Anfragen-Bediener, die den "Body"
-// für eine Http-Response erzeugen: Hier wird HTML produziert.
+// Drei beispielhafte Anfragen-Bediener, die den Inhalt
+// für die Serverantwort erzeugen: Hier wird HTML produziert.
 // Wir benutzen eine HtmlVorlage zur Erzeugung von HTML-Seiten und
 // füllen die Parameter mit Daten.
-// Du kannst das Html auch ohne Vorlage selbst erzeugen.
-// Der Server liefert das vom Bediener erzeugte Html an den Browser.
+// (Tipp: Du kannst das Html auch ohne Vorlage selbst erzeugen.)
+//
+// Der Server liefert das hier erzeugte Html an den Browser.
 func normalBediener() ([]byte, error) {
-	var vorlage html.HtmlVorlage
-	var err error
-	vorlage, err = html.NewVorlage(grussSeite)
-	if err != nil {
-		return nil, err
-	}
-	// Fülle mit Daten ("Parameter")
-	vorlage.SetzeParameter("Title", "mini Web-Projekt")
-	vorlage.SetzeParameter("Gruss", "Hallo Welt")
-	return vorlage.ErzeugeHTML()
+	grussSeite.SetzeParameter("Titel", "mini Web-Projekt")
+	grussSeite.SetzeParameter("Gruss", "Hallo Welt")
+	return grussSeite.ErzeugeHTML()
 }
 
 func berlinBediener() ([]byte, error) {
-	var vorlage html.HtmlVorlage
-	var err error
-	vorlage, err = html.NewVorlage(grussSeite)
-	if err != nil {
-		return nil, err
-	}
-	vorlage.SetzeParameter("Title", "mini Web-Projekt")
-	vorlage.SetzeParameter("Gruss", "N'juuten")
-	return vorlage.ErzeugeHTML()
+	grussSeite.SetzeParameter("Titel", "mini Web-Projekt")
+	grussSeite.SetzeParameter("Gruss", "N'juuten")
+	return grussSeite.ErzeugeHTML()
 }
 
-// erzeugt absichtlich einen Fehler
+// erzeugt absichtlich einen Server-Fehler
 func stressBediener() ([]byte, error) {
 	// ... hier passiert ein Fehler
 	return nil, fmt.Errorf("wat willste?")
@@ -84,27 +76,25 @@ func main() {
 
 	// Registriere einige Pfade, die Deine WebApp bedienen soll.
 	// Hier wird jeder Kombination aus <Http-Methode> und <Url-Pfad> ein Bediener zugeordnet.
-
-	// HINWEIS: das funktioniert so erst mit go 1.22:
-	// siehe https://eli.thegreenplace.net/2023/better-http-server-routing-in-go-122
-
-	// Wir bedienen die folgende sehr einfache Schnittstelle.
+	//
+	// Wir bedienen die folgende sehr einfache Schnittstelle:
 
 	// Bediene "GET /gruss"
-	srv.SetzeBediener(http.MethodeGet, "/gruss", normalBediener)
+	srv.SetzeHtmlBediener(http.MethodeGet, "/gruss", normalBediener)
 	// Bediene "GET /gruss/berlin"
-	srv.SetzeBediener(http.MethodeGet, "/gruss/berlin", berlinBediener)
+	srv.SetzeHtmlBediener(http.MethodeGet, "/gruss/berlin", berlinBediener)
 	// Bediene "GET /stress"
-	srv.SetzeBediener(http.MethodeGet, "/stress", stressBediener)
+	srv.SetzeHtmlBediener(http.MethodeGet, "/stress", stressBediener)
 
 	// Wir veröffentlichen auch ein Verzeichnis für statische HTML-Seiten,
 	// Bilder, Downloads und CSS. Bediene "GET /" (die Wurzel) muss damit
-	// nicht extra bedient werden, denn hier liegt eine "index.html" -
-	// diese Datei findet der Browser automatisch.
+	// in diesem Beispielprojekt nicht extra bedient werden, denn wir haben
+	// eine "index.html" in dem Verzeichnis hinterlegt.
+	// Diese Datei findet der Browser automatisch.
 	srv.VeroeffentlicheVerzeichnis("/", "static")
 
 	// den Web-Server starten - jetzt läuft er und kann über einen Browser oder
-	// über das Programm curl erreicht werden.
+	// über andere Client-Programme (z.B. curl oder das eigene ) erreicht werden.
 	// Man fährt den Server herunter mit der Tastenkombination Ctrl-C in der Konsole.
 	srv.LauscheUndBediene()
 }
