@@ -10,7 +10,7 @@ type data struct {
 	params  map[string]any
 }
 
-func NewVorlage(html_text string) *data {
+func NewHtmlVorlage(html_text string) *data {
 	v := new(data)
 	v.vorlage = template.Must(template.New("tpl").Parse(html_text))
 	v.params = make(map[string]any)

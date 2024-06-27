@@ -24,7 +24,7 @@ import (
 // Mehr zu HTML und CSS lernst Du unter
 // https://wiki.selfhtml.org/wiki/HTML
 // https://www.w3schools.com/html/
-var grussSeite = html.NewVorlage(`
+var grussSeite = html.NewHtmlVorlage(`
 <!DOCTYPE html>
 <html>
 	<head>
@@ -72,11 +72,17 @@ func stressBediener() ([]byte, error) {
 
 func main() {
 	// erzeuge ein Server-Objekt
-	var srv http.HttpServer = http.New("127.0.0.1", 8080)
+	var srv http.HttpServer = http.NewHttpServer("127.0.0.1", 8080)
 
-	// Registriere einige Pfade, die Deine WebApp bedienen soll.
+	// Wir veröffentlichen zunächst ein Verzeichnis für statische HTML-Seiten,
+	// Bilder, Downloads und CSS. In diesem Beispielprojekt haben wir auch
+	// eine "index.html" in dem Verzeichnis hinterlegt.
+	// Diese Datei findet der Browser automatisch, wenn man diesen Url ("/") anfragt:
+	srv.VeroeffentlicheVerzeichnis("/", "static")
+
+	// Registriere jetzt einige Pfade, die Deine WebApp bedienen soll.
 	// Hier wird jeder Kombination aus <Http-Methode> und <Url-Pfad> ein Bediener zugeordnet.
-	//
+
 	// Wir bedienen die folgende sehr einfache Schnittstelle:
 
 	// Bediene "GET /gruss"
@@ -85,13 +91,6 @@ func main() {
 	srv.SetzeHtmlBediener(http.MethodeGet, "/gruss/berlin", berlinBediener)
 	// Bediene "GET /stress"
 	srv.SetzeHtmlBediener(http.MethodeGet, "/stress", stressBediener)
-
-	// Wir veröffentlichen auch ein Verzeichnis für statische HTML-Seiten,
-	// Bilder, Downloads und CSS. Bediene "GET /" (die Wurzel) muss damit
-	// in diesem Beispielprojekt nicht extra bedient werden, denn wir haben
-	// eine "index.html" in dem Verzeichnis hinterlegt.
-	// Diese Datei findet der Browser automatisch.
-	srv.VeroeffentlicheVerzeichnis("/", "static")
 
 	// den Web-Server starten - jetzt läuft er und kann über einen Browser oder
 	// über andere Client-Programme (z.B. curl oder das eigene ) erreicht werden.

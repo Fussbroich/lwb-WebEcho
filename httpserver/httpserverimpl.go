@@ -26,7 +26,7 @@ const (
 	MethodeDelete = "DELETE"
 )
 
-func New(hostIP string, portnummer uint16) *data {
+func NewHttpServer(hostIP string, portnummer uint16) *data {
 	s := new(data)
 	s.hostIP = hostIP
 	s.portNr = portnummer
