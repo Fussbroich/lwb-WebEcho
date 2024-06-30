@@ -22,8 +22,8 @@ type HttpServer interface {
 	//	Http-Anfragen, die diesem Muster entsprechen, werden fortan durch diesen Bediener
 	//	beantwortet.
 	//	Das funktioniert so: Der Bediener produziert eine Ausgabe, und diese Ausgabe
-	//	wird als Body der Http-Antwort gesendet. Wenn bei der Ausführung des Bedieners
-	//	ein Fehler passiert, so verursacht das es einen sog. "internen Server-Fehler",
+	//	wird als Body der Http-Antwort gesendet. Wenn der Bediener
+	//	einen Fehler liefert, so verursacht das einen sog. "internen Server-Fehler",
 	//	der im Browser angezeigt wird.
 	SetzeHtmlBediener(http_methode, url_muster string, bediener func() ([]byte, error))
 

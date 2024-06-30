@@ -3,6 +3,8 @@
 // Zweck: Erzeuge und veröffentliche dynamische Web-Seiten mit Deinen Daten aus einem go-Programm.
 //
 // HINWEIS: benötigt go 1.22 im Modulmodus
+// Siehe https://go.dev/doc/install
+// Siehe https://go.dev/ref/mod
 //
 // Autor: T. Schrader
 //
@@ -97,7 +99,7 @@ func main() {
 	// Bediene "GET /stress"
 	srv.SetzeHtmlBediener(http.MethodeGet, "/stress", stressBediener)
 
-	// den Web-Server starten - jetzt läuft er und kann über einen Browser oder
+	// Starte den Web-Server - jetzt läuft er und kann über einen Browser oder
 	// über andere Client-Programme (z.B. curl oder das eigene) erreicht werden.
 	//
 	// Man fährt den Server herunter mit der Tastenkombination Ctrl-C in der Konsole.
