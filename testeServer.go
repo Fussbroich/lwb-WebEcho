@@ -17,19 +17,23 @@ func main() {
 	var ant []byte
 	var fehler error
 
-	fmt.Printf("Sende GET-Anfrage für %s\n", url1)
+	fmt.Printf("ANFRAGE: GET %s\n", url1)
 	ant, fehler = client.Anfragen(server.MethodeGet, url1)
 	if fehler != nil {
-		fmt.Printf("Fehler: %v\n", fehler)
+		fmt.Printf("FEHLER:  %v\n", fehler)
+	} else {
+		fmt.Println("OK")
 	}
-	fmt.Printf("Antwort vom Server: %s\n", string(ant))
+	fmt.Printf("ANTWORT: %s\n", string(ant))
 	fmt.Println("*********************************************")
 
-	fmt.Printf("Sende GET-Anfrage für %s\n", url2)
+	fmt.Printf("ANFRAGE: GET %s\n", url2)
 	ant, fehler = client.Anfragen(server.MethodeGet, url2)
 	if fehler != nil {
-		fmt.Printf("Fehler: %v\n", fehler)
+		fmt.Printf("FEHLER:  %v\n", fehler)
+	} else {
+		fmt.Println("OK")
 	}
-	fmt.Printf("Antwort vom Server: %s\n", string(ant))
+	fmt.Printf("ANTWORT: %s\n", string(ant))
 
 }

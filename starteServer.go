@@ -12,26 +12,25 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
-	html "github.com/Fussbroich/lwb-WebEcho/htmlvorlagen"
 	http "github.com/Fussbroich/lwb-WebEcho/httpserver"
 )
 
 // Etwas HTML für die Anzeige im Browser. Regel: Strukturiere Deinen HTML-Inhalt
 // mit div-Elementen. Die "class" bezieht sich auf einen Styling-Eintrag
 // in der style.css-Datei im öffentlichen Verzeichnis.
-// So hast Du eine gute Kontrolle über das Design der Darstellung.
-// Mehr zu HTML und CSS lernst Du unter
+// So hast Du eine gute Kontrolle über das Design der Darstellung
+// und das Html bleibt übersichtlich. Mehr zu HTML und CSS lernst Du unter
 // https://wiki.selfhtml.org/wiki/HTML
 // https://www.w3schools.com/html/
-var grussSeite = html.NewHtmlVorlage(`
+const grussSeite = `
 <!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="UTF-8">
-		<!-- Trick: nach Änderungen zähle die Versionsnummer v=... beliebig hoch -->
-	    <link rel="stylesheet" href="/style.css?v=1.2">
-		<title>{{$.Titel}}</title>
+	    <link rel="stylesheet" href="/style.css">
+		<title>mini Web-Projekt</title>
 	</head>
 	<body>
 	<!-- ein div für die Navigation -->
@@ -41,33 +40,39 @@ var grussSeite = html.NewHtmlVorlage(`
 		<a href="/stress">provoziere Stress</a>
 	</div>
 	<!-- ein div für den Inhalt -->
-	<div class="inhalt">{{$.Gruss}}</div>
+	<div class="inhalt">{{Gruss}}</div>
 </body>
-</html>`)
+</html>`
 
 // Drei beispielhafte Anfragen-Bediener, die den Inhalt
 // für die Serverantwort erzeugen: Hier wird HTML produziert.
-// Wir benutzen eine HtmlVorlage zur Erzeugung von HTML-Seiten und
-// füllen die Parameter mit Daten.
-// (Tipp: Du kannst das Html auch ohne Vorlage selbst erzeugen.)
+// Wir benutzen eine Vorlage zur Erzeugung von HTML-Seiten und
+// ersetzen die Parameter mit Daten. Dabei können Fehler passieren,
+// die natürlich vom Server behandelt werden müssen.
+//
+// Tipp: Du kannst das Html auch ohne Vorlage direkt erzeugen.
 //
 // Der Server liefert das hier erzeugte Html an den Browser.
 func normalBediener() ([]byte, error) {
-	grussSeite.SetzeParameter("Titel", "mini Web-Projekt")
-	grussSeite.SetzeParameter("Gruss", "Hallo Welt")
-	return grussSeite.ErzeugeHTML()
+	var html string
+	// Hier wird die Vorlage mit "Daten" gefüllt.
+	html = strings.Replace(grussSeite, "{{Gruss}}", "Hallo", -1)
+	// ... es hat beim Befüllen keinen Fehler gegeben:
+	return []byte(html), nil
 }
 
 func berlinBediener() ([]byte, error) {
-	grussSeite.SetzeParameter("Titel", "mini Web-Projekt")
-	grussSeite.SetzeParameter("Gruss", "N'juuten")
-	return grussSeite.ErzeugeHTML()
+	var html string
+	html = strings.Replace(grussSeite, "{{Gruss}}", "N'juuten", -1)
+	return []byte(html), nil
 }
 
 // erzeugt absichtlich einen Server-Fehler
 func stressBediener() ([]byte, error) {
 	// ... hier passiert ein Fehler
-	return nil, fmt.Errorf("wat willste?")
+	var err error
+	err = fmt.Errorf("Wat willste?")
+	return nil, err
 }
 
 func main() {
@@ -93,7 +98,10 @@ func main() {
 	srv.SetzeHtmlBediener(http.MethodeGet, "/stress", stressBediener)
 
 	// den Web-Server starten - jetzt läuft er und kann über einen Browser oder
-	// über andere Client-Programme (z.B. curl oder das eigene ) erreicht werden.
+	// über andere Client-Programme (z.B. curl oder das eigene) erreicht werden.
+	//
 	// Man fährt den Server herunter mit der Tastenkombination Ctrl-C in der Konsole.
 	srv.LauscheUndBediene()
+	// Code, der danach kommt, wird erst ausgeführt, wenn der Server wieder heruntergefahren ist
+	fmt.Println("Tschüss")
 }
