@@ -2,9 +2,20 @@
 //
 // Zweck: Erzeuge und veröffentliche dynamische Web-Seiten mit Deinen Daten aus einem go-Programm.
 //
-// HINWEIS: benötigt go 1.22 im Modulmodus
-// Siehe https://go.dev/doc/install
-// Siehe https://go.dev/ref/mod
+// HINWEIS: benötigt go 1.22 im Modulmodus:
+//
+// 1. U-Variable setzen
+// GO111MODULES=auto
+// 2. altes go löschen:
+// sudo rm -rf /usr/lib/golang
+// 3. neue Version runterladen, dann entpacken
+// sudo tar -C /usr/lib/ -xzf go1.22.4.linux-amd64.tar.gz
+// 4. Verzeichnis umbenennen
+// sudo mv /usr/lib/go /usr/lib/golang
+// 5. fehlende Module laden:
+// go mod tidy
+// 6. Server compilieren und starten
+// go run starteServer.go
 //
 // Autor: T. Schrader
 //
